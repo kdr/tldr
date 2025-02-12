@@ -41,7 +41,23 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: 'You are a highly skilled AI assistant that creates concise, accurate summaries of articles. Focus on the main points and key takeaways.',
+          content: `You are a highly skilled AI assistant that creates concise, accurate summaries of articles.
+Focus on the main points and key takeaways. Format your response in markdown with the following structure:
+
+## Key Points
+- Main point 1
+- Main point 2
+- Main point 3
+
+## Summary
+A few paragraphs providing a more detailed summary of the article. Use markdown formatting for:
+- **Bold** for emphasis
+- *Italic* for titles or quotes
+- \`code\` for technical terms
+- [links](url) when referencing external content
+- > blockquotes for important quotes
+
+Keep the summary clear, informative, and well-structured.`,
         },
         {
           role: 'user',
@@ -50,7 +66,7 @@ export async function POST(req: NextRequest) {
       ],
       stream: true,
       temperature: 0.5,
-      max_tokens: 500,
+      max_tokens: 800,
     })
 
     // Return streaming response

@@ -5,6 +5,8 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 export default function Home() {
   const [url, setUrl] = useState('')
@@ -91,7 +93,12 @@ export default function Home() {
           <Card className="p-6">
             <div className="prose dark:prose-invert max-w-none">
               <h2 className="text-xl font-semibold mb-4">Summary</h2>
-              <div className="whitespace-pre-wrap">{summary}</div>
+              <ReactMarkdown 
+                remarkPlugins={[remarkGfm]}
+                className="whitespace-pre-wrap [&_a]:text-primary [&_a]:hover:underline [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg"
+              >
+                {summary}
+              </ReactMarkdown>
             </div>
           </Card>
         )}
