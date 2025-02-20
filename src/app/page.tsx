@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function Home() {
   const [url, setUrl] = useState('')
@@ -55,11 +56,14 @@ export default function Home() {
   return (
     <main className="min-h-screen p-4 md:p-24">
       <div className="max-w-3xl mx-auto space-y-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold">TLDR</h1>
-          <p className="text-lg text-muted-foreground">
-            Instant AI-powered article summaries
-          </p>
+        <div className="flex items-center justify-between">
+          <div className="text-center space-y-4">
+            <h1 className="text-4xl font-bold">TLDR</h1>
+            <p className="text-lg text-muted-foreground">
+              Instant AI-powered article summaries
+            </p>
+          </div>
+          <ThemeToggle />
         </div>
 
         <Card className="p-6">
@@ -92,7 +96,7 @@ export default function Home() {
         {summary && (
           <Card className="p-6">
             <div className="prose dark:prose-invert max-w-none">
-              <h2 className="text-xl font-semibold mb-4">Summary</h2>
+              <h2 className="text-xl font-semibold mb-4">TL;DR</h2>
               <ReactMarkdown 
                 remarkPlugins={[remarkGfm]}
                 className="whitespace-pre-wrap [&_a]:text-primary [&_a]:hover:underline [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg"
