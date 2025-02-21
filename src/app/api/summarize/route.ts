@@ -1,6 +1,7 @@
 import { OpenAI } from 'openai'
 import { NextRequest } from 'next/server'
 import { type SummaryLength } from '@/components/length-selector'
+import { load } from 'cheerio'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -42,6 +43,29 @@ A few paragraphs providing a detailed summary
 Brief discussion of broader context and implications`,
 }
 
+function estimateReadTime(text: string): string {
+  const wordsPerMinute = 200
+  const words = text.trim().split(/\s+/).length
+  const minutes = Math.ceil(words / wordsPerMinute)
+  return `${minutes} min`
+}
+
+function extractMetadata($: cheerio.Root) {
+  const meta = {
+    title: $('meta[property="og:title"]').attr('content') || $('title').text() || undefined,
+    description: $('meta[property="og:description"]').attr('content') || $('meta[name="description"]').attr('content') || undefined,
+    image: $('meta[property="og:image"]').attr('content') || undefined,
+    siteName: $('meta[property="og:site_name"]').attr('content') || undefined,
+    publishedTime: $('meta[property="article:published_time"]').attr('content') || undefined,
+    author: $('meta[property="article:author"]').attr('content') || undefined,
+  }
+
+  // Clean up empty values
+  return Object.fromEntries(
+    Object.entries(meta).filter(([_, value]) => value !== undefined)
+  )
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { url, length = 'brief' } = await req.json()
@@ -64,15 +88,24 @@ export async function POST(req: NextRequest) {
     }
     const html = await response.text()
 
-    // Extract text content (basic implementation - you might want to use a proper HTML parser)
-    const textContent = html
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-      .replace(/<[^>]+>/g, '')
+    // Parse HTML and extract metadata
+    const $ = load(html)
+    const metadata = {
+      url,
+      ...extractMetadata($),
+    }
+
+    // Extract text content for summarization
+    const textContent = $('body')
+      .find('script, style, noscript, iframe').remove().end()
+      .text()
       .replace(/\s+/g, ' ')
       .trim()
 
-    // Create stream
+    // Add estimated read time
+    metadata.estimatedReadTime = estimateReadTime(textContent)
+
+    // Create stream for summary
     const stream = await openai.chat.completions.create({
       model: 'gpt-4-turbo-preview',
       messages: [
@@ -90,13 +123,21 @@ export async function POST(req: NextRequest) {
       max_tokens: length === 'detailed' ? 1000 : 500,
     })
 
+    // Send metadata first
+    const encoder = new TextEncoder()
+    const metadataChunk = encoder.encode(JSON.stringify({ metadata }) + '\n---\n')
+
     // Return streaming response
     return new Response(
       new ReadableStream({
         async start(controller) {
+          // Send metadata first
+          controller.enqueue(metadataChunk)
+
+          // Stream summary
           for await (const chunk of stream) {
             const text = chunk.choices[0]?.delta?.content || ''
-            controller.enqueue(text)
+            controller.enqueue(encoder.encode(text))
           }
           controller.close()
         },
