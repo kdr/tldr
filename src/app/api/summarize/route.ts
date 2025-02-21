@@ -1,13 +1,50 @@
 import { OpenAI } from 'openai'
 import { NextRequest } from 'next/server'
+import { type SummaryLength } from '@/components/length-selector'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
+const SUMMARY_PROMPTS: Record<SummaryLength, string> = {
+  tweet: `You are a highly skilled AI that creates ultra-concise summaries.
+Create a tweet-length summary (140 characters or less) that captures the essence of the article.
+Focus on the most important point only.
+Do not use hashtags or @mentions.`,
+
+  two_sentences: `You are a highly skilled AI that creates concise summaries.
+Summarize the article in exactly two clear, informative sentences.
+Focus on the main point and one key supporting detail.`,
+
+  bullets: `You are a highly skilled AI that creates bullet-point summaries.
+Summarize the article in 3-5 bullet points.
+Format in markdown with:
+- Main point first
+- Supporting points in order of importance
+- Each point should be one line`,
+
+  brief: `You are a highly skilled AI that creates concise summaries.
+Summarize the article in two short paragraphs.
+Format in markdown with:
+- First paragraph: Overview and main point
+- Second paragraph: Key details and implications`,
+
+  detailed: `You are a highly skilled AI that creates detailed summaries.
+Create a one-page summary of the article.
+Format in markdown with:
+## Key Points
+- 3-4 main takeaways
+
+## Summary
+A few paragraphs providing a detailed summary
+
+## Context & Implications
+Brief discussion of broader context and implications`,
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const { url } = await req.json()
+    const { url, length = 'brief' } = await req.json()
 
     if (!url) {
       return new Response('URL is required', { status: 400 })
@@ -41,32 +78,16 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: `You are a highly skilled AI assistant that creates concise, accurate summaries of articles.
-Focus on the main points and key takeaways. Format your response in markdown with the following structure:
-
-## Key Points
-- Main point 1
-- Main point 2
-- Main point 3
-
-## Summary
-A few paragraphs providing a more detailed summary of the article. Use markdown formatting for:
-- **Bold** for emphasis
-- *Italic* for titles or quotes
-- \`code\` for technical terms
-- [links](url) when referencing external content
-- > blockquotes for important quotes
-
-Keep the summary clear, informative, and well-structured.`,
+          content: SUMMARY_PROMPTS[length as SummaryLength],
         },
         {
           role: 'user',
-          content: `Please provide a clear and concise summary of the following article:\n\n${textContent}`,
+          content: `Please provide a summary of the following article:\n\n${textContent}`,
         },
       ],
       stream: true,
       temperature: 0.5,
-      max_tokens: 800,
+      max_tokens: length === 'detailed' ? 1000 : 500,
     })
 
     // Return streaming response

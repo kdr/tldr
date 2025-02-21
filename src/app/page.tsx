@@ -8,12 +8,14 @@ import { ArrowRight } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { LengthSelector, type SummaryLength } from '@/components/length-selector'
 
 export default function Home() {
   const [url, setUrl] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [summary, setSummary] = useState<string | null>(null)
+  const [length, setLength] = useState<SummaryLength>('brief')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,7 +29,7 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url, length }),
       })
 
       if (!response.ok) {
@@ -67,23 +69,29 @@ export default function Home() {
         </div>
 
         <Card className="p-6">
-          <form onSubmit={handleSubmit} className="flex gap-2">
-            <Input
-              type="url"
-              placeholder="Enter article URL..."
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              required
-              className="flex-1"
-            />
-            <Button type="submit" disabled={loading}>
-              {loading ? (
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-              ) : (
-                <ArrowRight className="h-5 w-5" />
-              )}
-              <span className="sr-only">Summarize</span>
-            </Button>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="flex gap-2">
+              <Input
+                type="url"
+                placeholder="Enter article URL..."
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                required
+                className="flex-1"
+              />
+              <Button type="submit" disabled={loading}>
+                {loading ? (
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                ) : (
+                  <ArrowRight className="h-5 w-5" />
+                )}
+                <span className="sr-only">Summarize</span>
+              </Button>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground">Summary length:</span>
+              <LengthSelector value={length} onChange={setLength} />
+            </div>
           </form>
         </Card>
 
