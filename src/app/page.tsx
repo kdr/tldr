@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -11,14 +11,23 @@ import { ThemeToggle } from '@/components/theme-toggle'
 import { LengthSelector, type SummaryLength } from '@/components/length-selector'
 import { ArticleMetaCard } from '@/components/article-meta'
 import type { ArticleMeta } from '@/components/article-meta'
+import { useSearchParams } from 'next/navigation'
 
 export default function Home() {
+  const searchParams = useSearchParams()
   const [url, setUrl] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [summary, setSummary] = useState<string | null>(null)
   const [metadata, setMetadata] = useState<ArticleMeta | null>(null)
   const [length, setLength] = useState<SummaryLength>('brief')
+
+  useEffect(() => {
+    const urlParam = searchParams.get('url')
+    if (urlParam) {
+      setUrl(urlParam)
+    }
+  }, [searchParams])
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -95,13 +104,15 @@ export default function Home() {
                   required
                   className="flex-1"
                 />
-                <Button type="submit" disabled={loading}>
+                <Button type="submit" disabled={loading} className="min-w-24">
                   {loading ? (
                     <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                   ) : (
-                    <ArrowRight className="h-5 w-5" />
+                    <>
+                      <span>TL;DR</span>
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
                   )}
-                  <span className="sr-only">Summarize</span>
                 </Button>
               </div>
               <div className="flex items-center gap-3">
