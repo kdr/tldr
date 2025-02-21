@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Share2, Check } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -12,15 +12,18 @@ import { LengthSelector, type SummaryLength } from '@/components/length-selector
 import { ArticleMetaCard } from '@/components/article-meta'
 import type { ArticleMeta } from '@/components/article-meta'
 import { useSearchParams } from 'next/navigation'
+import { useToast } from "@/hooks/use-toast"
 
-export default function Home() {
+function MainContent() {
   const searchParams = useSearchParams()
+  const { toast } = useToast()
   const [url, setUrl] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [summary, setSummary] = useState<string | null>(null)
   const [metadata, setMetadata] = useState<ArticleMeta | null>(null)
   const [length, setLength] = useState<SummaryLength>('brief')
+  const [isSharing, setIsSharing] = useState(false)
 
   useEffect(() => {
     const urlParam = searchParams.get('url')
@@ -28,6 +31,26 @@ export default function Home() {
       setUrl(urlParam)
     }
   }, [searchParams])
+
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/?url=${encodeURIComponent(url)}`
+    
+    try {
+      setIsSharing(true)
+      await navigator.clipboard.writeText(shareUrl)
+      toast({
+        description: "Share link copied to clipboard!",
+        duration: 3000,
+      })
+    } catch (err) {
+      toast({
+        description: "Failed to copy link",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSharing(false)
+    }
+  }
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -134,7 +157,24 @@ export default function Home() {
                 {summary && (
                   <Card className="p-6">
                     <div className="prose dark:prose-invert max-w-none">
-                      <h2 className="text-xl font-semibold mb-4">TL;DR</h2>
+                      <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-xl font-semibold m-0">TL;DR</h2>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleShare}
+                          className="h-8"
+                        >
+                          {isSharing ? (
+                            <Check className="h-4 w-4" />
+                          ) : (
+                            <>
+                              <Share2 className="h-4 w-4 mr-2" />
+                              <span>Share</span>
+                            </>
+                          )}
+                        </Button>
+                      </div>
                       <ReactMarkdown 
                         remarkPlugins={[remarkGfm]}
                         className="whitespace-pre-wrap [&_a]:text-primary [&_a]:hover:underline [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg"
@@ -159,5 +199,13 @@ export default function Home() {
         </div>
       </footer>
     </main>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense>
+      <MainContent />
+    </Suspense>
   )
 }
