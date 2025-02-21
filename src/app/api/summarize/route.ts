@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
 
     // Create stream for summary
     const stream = await openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',

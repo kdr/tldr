@@ -42,7 +42,7 @@ function MainContent() {
         description: "Share link copied to clipboard!",
         duration: 3000,
       })
-    } catch (err) {
+    } catch {
       toast({
         description: "Failed to copy link",
         variant: "destructive",
