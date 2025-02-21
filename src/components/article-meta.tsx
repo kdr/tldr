@@ -1,10 +1,11 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import { Card } from "@/components/ui/card"
 import { CalendarIcon, ClockIcon, GlobeIcon } from "lucide-react"
 
-interface ArticleMeta {
+export interface ArticleMeta {
   title?: string
   description?: string
   image?: string
@@ -32,10 +33,12 @@ export function ArticleMetaCard({ meta }: ArticleMetaCardProps) {
     <Card className="p-4 space-y-4">
       {meta.image && (
         <div className="aspect-[1200/630] relative overflow-hidden rounded-lg">
-          <img
+          <Image
             src={meta.image}
             alt={meta.title || 'Article thumbnail'}
-            className="object-cover w-full h-full"
+            fill
+            className="object-cover"
+            unoptimized // Since we're loading from external URLs
           />
         </div>
       )}

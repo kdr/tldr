@@ -10,17 +10,18 @@ import remarkGfm from 'remark-gfm'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { LengthSelector, type SummaryLength } from '@/components/length-selector'
 import { ArticleMetaCard } from '@/components/article-meta'
+import type { ArticleMeta } from '@/components/article-meta'
 
 export default function Home() {
   const [url, setUrl] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [summary, setSummary] = useState<string | null>(null)
-  const [metadata, setMetadata] = useState<any>(null)
+  const [metadata, setMetadata] = useState<ArticleMeta | null>(null)
   const [length, setLength] = useState<SummaryLength>('brief')
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
     setLoading(true)
     setError(null)
     setSummary(null)
@@ -58,7 +59,7 @@ export default function Home() {
               setMetadata(metadata)
               result = contentParts.join('\n---\n')
               metadataReceived = true
-            } catch (e) {
+            } catch {
               result += chunk
             }
           } else {
@@ -95,7 +96,7 @@ export default function Home() {
                 type="url"
                 placeholder="Enter article URL..."
                 value={url}
-                onChange={(e) => setUrl(e.target.value)}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => setUrl(event.target.value)}
                 required
                 className="flex-1"
               />

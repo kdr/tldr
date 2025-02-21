@@ -1,7 +1,8 @@
 import { OpenAI } from 'openai'
 import { NextRequest } from 'next/server'
 import { type SummaryLength } from '@/components/length-selector'
-import { load } from 'cheerio'
+import { type ArticleMeta } from '@/components/article-meta'
+import { CheerioAPI, load } from 'cheerio'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -50,7 +51,7 @@ function estimateReadTime(text: string): string {
   return `${minutes} min`
 }
 
-function extractMetadata($: cheerio.Root) {
+function extractMetadata($: CheerioAPI): Partial<ArticleMeta> {
   const meta = {
     title: $('meta[property="og:title"]').attr('content') || $('title').text() || undefined,
     description: $('meta[property="og:description"]').attr('content') || $('meta[name="description"]').attr('content') || undefined,
@@ -62,7 +63,7 @@ function extractMetadata($: cheerio.Root) {
 
   // Clean up empty values
   return Object.fromEntries(
-    Object.entries(meta).filter(([_, value]) => value !== undefined)
+    Object.entries(meta).filter(([, value]) => value !== undefined)
   )
 }
 
@@ -90,7 +91,7 @@ export async function POST(req: NextRequest) {
 
     // Parse HTML and extract metadata
     const $ = load(html)
-    const metadata = {
+    const metadata: ArticleMeta = {
       url,
       ...extractMetadata($),
     }
