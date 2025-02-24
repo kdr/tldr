@@ -3,7 +3,8 @@
 import * as React from "react"
 import Image from "next/image"
 import { Card } from "@/components/ui/card"
-import { CalendarIcon, ClockIcon, GlobeIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { CalendarIcon, ClockIcon, GlobeIcon, ExternalLink } from "lucide-react"
 
 export interface ArticleMeta {
   title?: string
@@ -72,6 +73,14 @@ export function ArticleMetaCard({ meta }: ArticleMetaCardProps) {
           </div>
         )}
       </div>
+      <Button
+        variant="outline"
+        className="w-full"
+        onClick={() => window.open(meta.url, '_blank', 'noopener,noreferrer')}
+      >
+        <ExternalLink className="h-4 w-4 mr-2" />
+        Read Original Article
+      </Button>
     </Card>
   )
 } 
