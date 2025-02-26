@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "TLDR - AI Article Summarizer",
   description: "Instant AI-powered article summaries",
-  metadataBase: new URL('https://tldr.kdr.dev'),
+  metadataBase: new URL('https://tldr-gray.vercel.app'),
   viewport: {
     width: 'device-width',
     initialScale: 1,
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     title: 'TLDR - AI Article Summarizer',
     description: 'Instant AI-powered article summaries',
     images: ['/og-image.png'],
-    creator: '@kdrag0n',
+    creator: '@kdr',
   },
   robots: {
     index: true,
